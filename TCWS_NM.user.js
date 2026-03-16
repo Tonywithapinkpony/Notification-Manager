@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         TCWS Zendesk - Notification Manager
 // @namespace    https://tommycarwash.zendesk.com/a
-// @version      1.3.7
-// @description  v1.3.7: Fix hotkey/button toggle (navBtnEl guard, positionPanel try/finally, updateNavBtn sync, dead ownMod var removed, nav btn title corrected).
+// @version      1.3.8
+// @description  v1.3.8: Fix hotkey/button toggle (navBtnEl guard, positionPanel try/finally, updateNavBtn sync, dead ownMod var removed, nav btn title corrected).
 // @match        https://tommycarwash.zendesk.com/*
 // @grant        none
 // @run-at       document-idle
@@ -4294,7 +4294,7 @@
     li.setAttribute('data-tcws-nav-li', '1');
     const btn = document.createElement('button');
     btn.type = 'button'; btn.className = 'tcws-nav-btn';
-    btn.title = 'TCWS Notification Manager v1.3.7';
+    btn.title = 'TCWS Notification Manager v1.3.8';
     btn.innerHTML = `
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
         <path class="icon-ring" d="M9 2.5A6.5 6.5 0 0 1 15.5 9" stroke-width="1.6" stroke-linecap="round"/>
@@ -5681,7 +5681,7 @@
     // ── Footer ──────────────────────────────────────────────────────────────────
     const footer = document.createElement('div'); footer.className = 'tcws-footer';
     footer.innerHTML = `<span class="tcws-footer-kbs"><kbd>Esc</kbd> close</span>
-                        <span class="tcws-footer-ver">v1.3.7 · TCWS NM</span>`;
+                        <span class="tcws-footer-ver">v1.3.8 · TCWS NM</span>`;
     inner.appendChild(footer);
 
     function showTab(t) {
