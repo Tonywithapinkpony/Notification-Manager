@@ -6139,9 +6139,9 @@
         });
         body.appendChild(card);
       }
-    }
+    } // end renderResolved
 
-    // ══ AUTO-REFRESH ══════════════════════════════════════════════════════════════
+    // ══ ASSIGNED ══════════════════════════════════════════════════════════════════
     function renderAssigned() {
       body.innerHTML = '';
 
@@ -8154,4 +8154,5 @@
   _bootWithRetry();
   scheduleScan();
 
+// eslint-disable-next-line no-extra-parens
 })();
