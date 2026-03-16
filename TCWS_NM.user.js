@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         TCWS Zendesk - Notification Manager
 // @namespace    https://tommycarwash.zendesk.com/a
-// @version      1.3.6
-// @description  v1.3.6: Remove background image / GIF feature (storage keys, applyBgImage, CSS overlay, settings UI).
+// @version      1.3.7
+// @description  v1.3.7: Remove background image / GIF feature (storage keys, applyBgImage, CSS overlay, settings UI).
 // @updateURL    https://raw.githubusercontent.com/Tonywithapinkpony/NM/main/TCWS_NM.user.js
 // @downloadURL  https://raw.githubusercontent.com/Tonywithapinkpony/NM/main/TCWS_NM.user.js
 // @match        https://tommycarwash.zendesk.com/*
