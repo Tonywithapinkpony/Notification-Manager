@@ -2,9 +2,7 @@
 // @name         TCWS Zendesk - Notification Manager
 // @namespace    https://tommycarwash.zendesk.com/a
 // @version      1.3.7
-// @description  v1.3.7: Remove background image / GIF feature (storage keys, applyBgImage, CSS overlay, settings UI).
-// @updateURL    https://raw.githubusercontent.com/Tonywithapinkpony/NM/main/TCWS_NM.user.js
-// @downloadURL  https://raw.githubusercontent.com/Tonywithapinkpony/NM/main/TCWS_NM.user.js
+// @description  v1.3.7: Fix hotkey/button toggle (navBtnEl guard, positionPanel try/finally, updateNavBtn sync, dead ownMod var removed, nav btn title corrected).
 // @match        https://tommycarwash.zendesk.com/*
 // @grant        none
 // @run-at       document-idle
@@ -4296,7 +4294,7 @@
     li.setAttribute('data-tcws-nav-li', '1');
     const btn = document.createElement('button');
     btn.type = 'button'; btn.className = 'tcws-nav-btn';
-    btn.title = 'TCWS Notification Manager v1.3.0';
+    btn.title = 'TCWS Notification Manager v1.3.7';
     btn.innerHTML = `
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
         <path class="icon-ring" d="M9 2.5A6.5 6.5 0 0 1 15.5 9" stroke-width="1.6" stroke-linecap="round"/>
@@ -7389,7 +7387,6 @@
         mxWrap.appendChild(mxHint);
         sc.appendChild(mxWrap);
       }
-    }
 
     // ── DISPLAY (scale / zoom) ────────────────────────────────────────────────────
     function renderSettingsDisplay(sc) {
@@ -7922,53 +7919,57 @@
   // ─── Panel positioning + management ──────────────────────────────────────────
   function positionPanel(panel, anchor) {
     panel.style.visibility = 'hidden'; panel.classList.add('open');
-    const rect = anchor.getBoundingClientRect();
-    // Compensate for CSS zoom: offsetWidth/Height report pre-zoom logical size
-    const scale = loadScale();
-    const pw = (panel.offsetWidth  || NM_W_DEFAULT) * scale;
-    const ph = (panel.offsetHeight || 400) * scale;
-    const side   = loadNMSide();
-    const valign = loadNMVAlign();
-    const ox     = loadNMOffsetX();
-    const oy     = loadNMOffsetY();
+    try {
+      const rect = anchor.getBoundingClientRect();
+      // Compensate for CSS zoom: offsetWidth/Height report pre-zoom logical size
+      const scale = loadScale();
+      const pw = (panel.offsetWidth  || NM_W_DEFAULT) * scale;
+      const ph = (panel.offsetHeight || 400) * scale;
+      const side   = loadNMSide();
+      const valign = loadNMVAlign();
+      const ox     = loadNMOffsetX();
+      const oy     = loadNMOffsetY();
 
-    // ── Horizontal placement ──────────────────────────────────────────────────
-    let left;
-    if (side === 'left')  {
-      left = rect.left - pw - 10;
-    } else if (side === 'right') {
-      left = rect.right + 10;
-    } else {
-      // auto: prefer right of anchor, fall back to left if it overflows
-      left = rect.right + 10;
-      if (left + pw > window.innerWidth - 8) left = Math.max(8, rect.left - pw - 10);
+      // ── Horizontal placement ──────────────────────────────────────────────────
+      let left;
+      if (side === 'left')  {
+        left = rect.left - pw - 10;
+      } else if (side === 'right') {
+        left = rect.right + 10;
+      } else {
+        // auto: prefer right of anchor, fall back to left if it overflows
+        left = rect.right + 10;
+        if (left + pw > window.innerWidth - 8) left = Math.max(8, rect.left - pw - 10);
+      }
+
+      // ── Vertical placement ───────────────────────────────────────────────────
+      let top;
+      if (valign === 'top') {
+        top = 8;
+      } else if (valign === 'middle') {
+        top = Math.max(8, Math.round((window.innerHeight - ph) / 2));
+      } else if (valign === 'bottom') {
+        top = window.innerHeight - ph - 8;
+      } else {
+        // auto: align to anchor top, clamp to viewport
+        top = rect.top;
+        if (top + ph > window.innerHeight - 8) top = window.innerHeight - ph - 8;
+        if (top < 8) top = 8;
+      }
+
+      // ── Apply nudge offsets, clamped so panel stays on-screen ────────────────
+      left = Math.max(0, Math.min(window.innerWidth  - 40, left + ox));
+      top  = Math.max(0, Math.min(window.innerHeight - 40, top  + oy));
+
+      panel.style.left = `${left}px`;
+      panel.style.top  = `${top}px`;
+    } finally {
+      // Always clear visibility so a thrown error never leaves the panel invisible
+      panel.style.visibility = '';
     }
-
-    // ── Vertical placement ───────────────────────────────────────────────────
-    let top;
-    if (valign === 'top') {
-      top = 8;
-    } else if (valign === 'middle') {
-      top = Math.max(8, Math.round((window.innerHeight - ph) / 2));
-    } else if (valign === 'bottom') {
-      top = window.innerHeight - ph - 8;
-    } else {
-      // auto: align to anchor top, clamp to viewport
-      top = rect.top;
-      if (top + ph > window.innerHeight - 8) top = window.innerHeight - ph - 8;
-      if (top < 8) top = 8;
-    }
-
-    // ── Apply nudge offsets, clamped so panel stays on-screen ────────────────
-    left = Math.max(0, Math.min(window.innerWidth  - 40, left + ox));
-    top  = Math.max(0, Math.min(window.innerHeight - 40, top  + oy));
-
-    panel.style.left = `${left}px`;
-    panel.style.top  = `${top}px`;
-    panel.style.visibility = '';
   }
-  function openThePanel()   { if (!panelEl) return; applyNMWidth(panelEl); applyScale(panelEl); positionPanel(panelEl, navBtnEl); panelEl._render(); }
-  function closeThePanel()  { panelEl?.classList.remove('open'); closeDetailPanel(); _closeAgentPicker(); }
+  function openThePanel()   { if (!panelEl || !navBtnEl) return; applyNMWidth(panelEl); applyScale(panelEl); positionPanel(panelEl, navBtnEl); panelEl._render(); updateNavBtn(); }
+  function closeThePanel()  { panelEl?.classList.remove('open'); closeDetailPanel(); _closeAgentPicker(); updateNavBtn(); }
   function toggleThePanel() { if (panelEl?.classList.contains('open')) closeThePanel(); else openThePanel(); }
 
   document.addEventListener('mousedown', e => {
@@ -8005,7 +8006,6 @@
       // Double-tap a bare modifier key — ignore if any OTHER modifier is held
       // so Ctrl+C etc. never accidentally trigger
       const modMap = { Control: 'ctrlKey', Alt: 'altKey', Shift: 'shiftKey' };
-      const ownMod = modMap[hk.key];
       if (e.key !== hk.key) return;
       // Make sure no other modifier is held alongside the tapped key
       const others = Object.entries(modMap).filter(([k]) => k !== hk.key).map(([, p]) => p);
