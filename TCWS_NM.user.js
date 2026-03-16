@@ -3,8 +3,8 @@
 // @namespace    https://tommycarwash.zendesk.com/a
 // @version      1.3.8
 // @description  v1.3.8: Remove background image / GIF feature (storage keys, applyBgImage, CSS overlay, settings UI).
-// @updateURL    https://raw.githubusercontent.com/Tonywithapinkpony/NM/main/TCWS_NM.user.js
-// @downloadURL  https://raw.githubusercontent.com/Tonywithapinkpony/NM/main/TCWS_NM.user.js
+// @updateURL    https://raw.githubusercontent.com/Tonywithapinkpony/Notification-Manager/main/TCWS_NM.user.js
+// @downloadURL  https://raw.githubusercontent.com/Tonywithapinkpony/Notification-Manager/main/TCWS_NM.user.js
 // @match        https://tommycarwash.zendesk.com/*
 // @grant        none
 // @run-at       document-idle
