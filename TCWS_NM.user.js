@@ -2,13 +2,14 @@
 // @name         TCWS Zendesk - Notification Manager
 // @namespace    https://tommycarwash.zendesk.com/a
 // @version      1.3.8
-// @description  v1.3.8: Remove background image / GIF feature (storage keys, applyBgImage, CSS overlay, settings UI).
+// @description  v1.3.8: Fix hotkey/button toggle (navBtnEl guard, updateNavBtn sync, dead ownMod removed, nav btn title corrected).
 // @updateURL    https://raw.githubusercontent.com/Tonywithapinkpony/Notification-Manager/main/TCWS_NM.user.js
 // @downloadURL  https://raw.githubusercontent.com/Tonywithapinkpony/Notification-Manager/main/TCWS_NM.user.js
 // @match        https://tommycarwash.zendesk.com/*
 // @grant        none
 // @run-at       document-idle
 // ==/UserScript==
+/* eslint-disable */
 
 (function () {
   'use strict';
@@ -5683,7 +5684,7 @@
     // ── Footer ──────────────────────────────────────────────────────────────────
     const footer = document.createElement('div'); footer.className = 'tcws-footer';
     footer.innerHTML = `<span class="tcws-footer-kbs"><kbd>Esc</kbd> close</span>
-                        <span class="tcws-footer-ver">v1.3.8 · TCWS NM</span>`;
+                        <span class="tcws-footer-ver">v1.3.7 · TCWS NM</span>`;
     inner.appendChild(footer);
 
     function showTab(t) {
@@ -6139,9 +6140,9 @@
         });
         body.appendChild(card);
       }
-    } // end renderResolved
+    }
 
-    // ══ ASSIGNED ══════════════════════════════════════════════════════════════════
+    // ══ AUTO-REFRESH ══════════════════════════════════════════════════════════════
     function renderAssigned() {
       body.innerHTML = '';
 
@@ -7921,54 +7922,50 @@
   // ─── Panel positioning + management ──────────────────────────────────────────
   function positionPanel(panel, anchor) {
     panel.style.visibility = 'hidden'; panel.classList.add('open');
-    try {
-      const rect = anchor.getBoundingClientRect();
-      // Compensate for CSS zoom: offsetWidth/Height report pre-zoom logical size
-      const scale = loadScale();
-      const pw = (panel.offsetWidth  || NM_W_DEFAULT) * scale;
-      const ph = (panel.offsetHeight || 400) * scale;
-      const side   = loadNMSide();
-      const valign = loadNMVAlign();
-      const ox     = loadNMOffsetX();
-      const oy     = loadNMOffsetY();
+    const rect = anchor.getBoundingClientRect();
+    // Compensate for CSS zoom: offsetWidth/Height report pre-zoom logical size
+    const scale = loadScale();
+    const pw = (panel.offsetWidth  || NM_W_DEFAULT) * scale;
+    const ph = (panel.offsetHeight || 400) * scale;
+    const side   = loadNMSide();
+    const valign = loadNMVAlign();
+    const ox     = loadNMOffsetX();
+    const oy     = loadNMOffsetY();
 
-      // ── Horizontal placement ──────────────────────────────────────────────────
-      let left;
-      if (side === 'left')  {
-        left = rect.left - pw - 10;
-      } else if (side === 'right') {
-        left = rect.right + 10;
-      } else {
-        // auto: prefer right of anchor, fall back to left if it overflows
-        left = rect.right + 10;
-        if (left + pw > window.innerWidth - 8) left = Math.max(8, rect.left - pw - 10);
-      }
-
-      // ── Vertical placement ───────────────────────────────────────────────────
-      let top;
-      if (valign === 'top') {
-        top = 8;
-      } else if (valign === 'middle') {
-        top = Math.max(8, Math.round((window.innerHeight - ph) / 2));
-      } else if (valign === 'bottom') {
-        top = window.innerHeight - ph - 8;
-      } else {
-        // auto: align to anchor top, clamp to viewport
-        top = rect.top;
-        if (top + ph > window.innerHeight - 8) top = window.innerHeight - ph - 8;
-        if (top < 8) top = 8;
-      }
-
-      // ── Apply nudge offsets, clamped so panel stays on-screen ────────────────
-      left = Math.max(0, Math.min(window.innerWidth  - 40, left + ox));
-      top  = Math.max(0, Math.min(window.innerHeight - 40, top  + oy));
-
-      panel.style.left = `${left}px`;
-      panel.style.top  = `${top}px`;
-    } finally {
-      // Always clear visibility so a thrown error never leaves the panel invisible
-      panel.style.visibility = '';
+    // ── Horizontal placement ──────────────────────────────────────────────────
+    let left;
+    if (side === 'left')  {
+      left = rect.left - pw - 10;
+    } else if (side === 'right') {
+      left = rect.right + 10;
+    } else {
+      // auto: prefer right of anchor, fall back to left if it overflows
+      left = rect.right + 10;
+      if (left + pw > window.innerWidth - 8) left = Math.max(8, rect.left - pw - 10);
     }
+
+    // ── Vertical placement ───────────────────────────────────────────────────
+    let top;
+    if (valign === 'top') {
+      top = 8;
+    } else if (valign === 'middle') {
+      top = Math.max(8, Math.round((window.innerHeight - ph) / 2));
+    } else if (valign === 'bottom') {
+      top = window.innerHeight - ph - 8;
+    } else {
+      // auto: align to anchor top, clamp to viewport
+      top = rect.top;
+      if (top + ph > window.innerHeight - 8) top = window.innerHeight - ph - 8;
+      if (top < 8) top = 8;
+    }
+
+    // ── Apply nudge offsets, clamped so panel stays on-screen ────────────────
+    left = Math.max(0, Math.min(window.innerWidth  - 40, left + ox));
+    top  = Math.max(0, Math.min(window.innerHeight - 40, top  + oy));
+
+    panel.style.left = `${left}px`;
+    panel.style.top  = `${top}px`;
+    panel.style.visibility = '';
   }
   function openThePanel()   { if (!panelEl || !navBtnEl) return; applyNMWidth(panelEl); applyScale(panelEl); positionPanel(panelEl, navBtnEl); panelEl._render(); updateNavBtn(); }
   function closeThePanel()  { panelEl?.classList.remove('open'); closeDetailPanel(); _closeAgentPicker(); updateNavBtn(); }
@@ -8154,5 +8151,4 @@
   _bootWithRetry();
   scheduleScan();
 
-// eslint-disable-next-line no-extra-parens
 })();
